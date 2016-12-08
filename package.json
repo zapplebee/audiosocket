@@ -1,0 +1,21 @@
+{
+  "name": "audiosocket",
+  "version": "1.0.0",
+  "description": "Resample audio in the browser and transmit over socket",
+  "main": "index.js",
+  "scripts": {
+    "test": ""
+  },
+  "repository" :
+  { "type" : "git"
+  , "url" : "https://github.com/zapplebee/audiosocket.git"
+  },
+  "author" : "Zachary Skalko",
+  "license" : "MIT",
+  "dependencies" : {
+    "angular": "^1.5.8",
+    "express": "^4.14.0",
+    "node-sass-middleware": "^0.9.8",
+    "pug": "^2.0.0-beta5"
+  }
+}
