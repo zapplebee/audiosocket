@@ -12,7 +12,7 @@ server.listen(80);
 function defined(arg) {
   return typeof arg !== 'undefined';
 }
-const catchWatsonError = function (socket, speech) {
+const catchSpeechError = function (socket, speech) {
   return function (e) {
     console.error('watson error', e.toString());
     socket.emit('err', e.toString());
@@ -47,7 +47,7 @@ io.on('connection', function (socket) {
       console.log('sox closed', arguments);
       sox = undefined;
     });
-    speech.stdio[1].on('error', catchWatsonError(socket, speech)).on('close', function () {
+    speech.stdio[1].on('error', catchSpeechError(socket, speech)).on('close', function () {
       console.log('watson closed', arguments);
       speech = undefined;
     }).on('data', function (b) {
