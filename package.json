@@ -6,16 +6,21 @@
   "scripts": {
     "test": ""
   },
-  "repository" :
-  { "type" : "git"
-  , "url" : "https://github.com/zapplebee/audiosocket.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zapplebee/audiosocket.git"
   },
-  "author" : "Zachary Skalko",
-  "license" : "MIT",
-  "dependencies" : {
+  "author": "Zachary Skalko",
+  "license": "MIT",
+  "dependencies": {
     "angular": "^1.5.8",
     "express": "^4.14.0",
+    "lodash": "^4.17.2",
     "node-sass-middleware": "^0.9.8",
-    "pug": "^2.0.0-beta5"
+    "pug": "^2.0.0-beta5",
+    "socket.io": "^1.7.1",
+    "sox-bin": "^1.0.0",
+    "typedarray-to-buffer": "^3.1.2",
+    "watson-developer-cloud": "^2.14.3"
   }
 }
