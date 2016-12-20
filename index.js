@@ -34,7 +34,7 @@ io.on('connection', function (socket) {
       sox = spawn(soxPath, sArgs(sampleRate));
     if (!defined(speech))
       speech = spawn('node', [
-        __dirname + '/speech_to_text.js',
+        __dirname + '/watson_speech_to_text.js',
         sampleRate
       ]);
     bufferStream.on('close', function () {
