@@ -3,12 +3,13 @@ const speech = require('@google-cloud/speech')(keys);
 const fs = require('fs');
 const sampleRate = process.argv[2];
 const request = {
-  config: { content-type: 'audio/FLAC; rate=' + sampleRate},
-  singleUtterance: true,
-  interimResults: false
+  config: { encoding: 'flac', sampleRate: sampleRate}
 };
-var speechRecog = speech.createRecognizeStream(request);
+var s = fs.createWriteStream('s.log');
+process.stdout.pipe(s);
+//https://github.com/GoogleCloudPlatform/nodejs-docs-samples/blob/master/speech/recognize.js
+var speechRecog = speech.streamingMicRecognize(request);
 process.stdin.pipe(speechRecog);
-
-
-speechRecog.pipe(process.stdout);
+speechRecog.on('error',console.error);
+speechRecog.on('data',console.log);
+//speechRecog.pipe(process.stdout);
