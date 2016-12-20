@@ -71,9 +71,7 @@ app.use("/images", express.static(path.join(__dirname, 'images')));
 const apikeys = require('./apikeys.js');
   
 io.on('connection', function (socket) {
-
-  var speech_to_text = new SpeechToTextV1(apikeys);
-  
+  var speech_to_text = new SpeechToTextV1(apikeys);  
   const sox = spawn(soxPath, ARGS);
   var bufferStream = new stream.PassThrough();
   bufferStream.pipe(sox.stdio[0]);  

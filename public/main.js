@@ -19,16 +19,10 @@ function initializeRecorder(stream) {
   var context = new AudioContext();
   var audioInput = context.createMediaStreamSource(stream);
   var listener = context.createScriptProcessor(inputBufferLength, 1, 1);
-  var silenceNotes = 0;
-  var listnening = false;
-  var lastListen = 0;
   listener.onaudioprocess = function(e) {
-    var leftChannel = e.inputBuffer.getChannelData(0);
-    var emitInterval = Math.abs(lastListen - e.timeStamp);
     sampleRate = e.inputBuffer.sampleRate;
     socket.emit('audio',leftChannel.buffer);
   }
-
   audioInput.connect(listener);
   listener.connect(context.destination);
 }

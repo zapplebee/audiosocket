@@ -4,7 +4,7 @@
   "description": "Resample audio in the browser and transmit over socket",
   "main": "index.js",
   "scripts": {
-    "test": ""
+    "render": "node-sass raw/main.scss public/main.css && pug raw/index.pug public/index.html"
   },
   "repository": {
     "type": "git",
