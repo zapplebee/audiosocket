@@ -1,90 +1,72 @@
-"use strict"
-
-var express = require('express');
-var app = express();
-var sassMiddleware = require('node-sass-middleware');
-var path = require('path');
+'use strict';
+const express = require('express');
+const app = express();
+const path = require('path');
 const fs = require('fs');
 const spawn = require('child_process').spawn;
-const _ = require('lodash');
-
-
-const toBuffer = require('typedarray-to-buffer')
 const soxPath = require('sox-bin');
-const cp = require('child_process');
 const stream = require('stream');
-
-const ARGS = [
-  '-r',
-  44100,
-  '-e',
-  'floating-point',
-  '-b',
-  '32',
-  '-c',
-  '1',
-  '-t',
-  'raw',
-  '-',
-  '-t',
-  'flac',
-  '-'
-];
-
-
-const SpeechToTextV1 = require('watson-developer-cloud/speech-to-text/v1');
-
-
-
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
 server.listen(80);
-
-
-
-//pug renderer, index
-app.set('views', './views')
-app.set('view engine', 'pug')
-app.get('/', function (req, res) {
-  res.render('index', {});
-});
-
-
+function defined(arg) {
+  return typeof arg !== 'undefined';
+}
+const catchWatsonError = function (socket, speech) {
+  return function (e) {
+    console.error('watson error', e.toString());
+    socket.emit('err', e.toString());
+    speech.kill();
+  };
+};
 app.use('/script/angular.js', express.static(__dirname + '/node_modules/angular/angular.js'));
 app.use('/script/socket.io.min.js', express.static(__dirname + '/node_modules/socket.io-client/dist/socket.io.min.js'));
-app.use('/script', express.static(__dirname + '/script'));
-
-
-//sass
-app.use(sassMiddleware({
-    src: path.join(__dirname, 'style'),
-    dest: path.join(__dirname, 'style'),
-    debug: true,
-    outputStyle: 'extended',
-    prefix: "/style"
-}));
-app.use("/style", express.static(path.join(__dirname, '/style')));
-
-
-app.use("/images", express.static(path.join(__dirname, 'images')));
-
-const apikeys = require('./apikeys.js');
-  
+app.use('/', express.static(path.join(__dirname, '/public')));
+var sArgs = require('./sox-args.js');
 io.on('connection', function (socket) {
-  var speech_to_text = new SpeechToTextV1(apikeys);  
-  const sox = spawn(soxPath, ARGS);
-  var bufferStream = new stream.PassThrough();
-  bufferStream.pipe(sox.stdio[0]);  
-  sox.stdio[1].pipe(speech_to_text.createRecognizeStream({ content_type: 'audio/flac; rate=44100' }))
-  .on('error',function(e){
-    console.log(e);
-    socket.emit('error',e);
-  })
-  .on('data',function(b){
-    socket.emit('transcript',b.toString());
-  })
-  
+  var sox;
+  var speech;
+  var bufferStream;
+  socket.on('sampleRate', function (sampleRate) {
+    if (!defined(bufferStream))
+      bufferStream = new stream.PassThrough();
+    if (!defined(sox))
+      sox = spawn(soxPath, sArgs(sampleRate));
+    if (!defined(speech))
+      speech = spawn('node', [
+        __dirname + '/speech_to_text.js',
+        sampleRate
+      ]);
+    bufferStream.on('close', function () {
+      console.log('bufferStream closed', arguments);
+      bufferStream = undefined;
+    });
+    bufferStream.pipe(sox.stdio[0]);
+    sox.stdio[1].pipe(speech.stdio[0]);
+    sox.stdio[1].on('close', function () {
+      console.log('sox closed', arguments);
+      sox = undefined;
+    });
+    speech.stdio[1].on('error', catchWatsonError(socket, speech)).on('close', function () {
+      console.log('watson closed', arguments);
+      speech = undefined;
+    }).on('data', function (b) {
+      socket.emit('transcript', b.toString());
+      if (!defined(sox) || sox.killed) {
+        if (defined(speech) && !speech.killed) {
+          speech.kill();
+        }
+      }
+    });
+  });
+  socket.on('closeListen', function () {
+    if (defined(sox) && !sox.killed) {
+      sox.kill();
+    }
+    console.log('audio from browser closed');
+  });
   socket.on('audio', function (buffer) {
-    bufferStream.write(buffer);
+    if (defined(bufferStream))
+      bufferStream.write(buffer);
   });
 });
