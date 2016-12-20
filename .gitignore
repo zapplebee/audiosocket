@@ -85,3 +85,5 @@ $RECYCLE.BIN/
 *.lnk
 
 apikeys.js
+watsonapikeys.js
+googleapikeys.js
