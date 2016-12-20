@@ -1,8 +1,10 @@
-var speech = require('@google-cloud/speech')(require('./googleapikeys.js'));
-var request = {
+const keys = require('./googleapikeys.js')
+const speech = require('@google-cloud/speech')(keys);
+const fs = require('fs');
+const request = {
   config: { encoding: 'FLAC' },
-  singleUtterance: false,
-  interimResults: true
+  singleUtterance: true,
+  interimResults: false
 };
 var speechRecog = speech.createRecognizeStream(request);
 process.stdin.pipe(speechRecog);
