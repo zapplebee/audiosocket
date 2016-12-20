@@ -17,7 +17,7 @@ const catchSpeechError = function (socket, speech) {
     console.log(arguments);
     console.error('speech error', e.toString());
     socket.emit('err', e.toString());
-    speech.kill();
+    //speech.kill();
   };
 };
 app.use('/script/angular.js', express.static(__dirname + '/node_modules/angular/angular.js'));
@@ -42,13 +42,19 @@ io.on('connection', function (socket) {
       console.log('bufferStream closed', arguments);
       bufferStream = undefined;
     });
+    
+    bufferStream.on('error',console.error)
     bufferStream.pipe(sox.stdio[0]);
     sox.stdio[1].pipe(speech.stdio[0]);
+    
+    
+    sox.stdio[1].on('error',console.error);
     sox.stdio[1].on('close', function () {
       console.log('sox closed', arguments);
       sox = undefined;
     });
-    speech.stdio[1].on('error', catchSpeechError(socket, speech)).on('close', function () {
+    speech.stdio[1].on('error',console.error)
+    .on('close', function () {
       console.log('watson closed', arguments);
       speech = undefined;
     }).on('data', function (b) {
