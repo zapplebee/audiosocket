@@ -12,12 +12,11 @@ server.listen(80);
 function defined(arg) {
   return typeof arg !== 'undefined';
 }
-const catchSpeechError = function (socket, speech) {
+const catchWatsonError = function (socket, speech) {
   return function (e) {
-    console.log(arguments);
-    console.error('speech error', e.toString());
+    console.error('watson error', e.toString());
     socket.emit('err', e.toString());
-    //speech.kill();
+    speech.kill();
   };
 };
 app.use('/script/angular.js', express.static(__dirname + '/node_modules/angular/angular.js'));
@@ -35,34 +34,27 @@ io.on('connection', function (socket) {
       sox = spawn(soxPath, sArgs(sampleRate));
     if (!defined(speech))
       speech = spawn('node', [
-        __dirname + '/google_speech_to_text.js',
+        __dirname + '/speech_to_text.js',
         sampleRate
       ]);
     bufferStream.on('close', function () {
       console.log('bufferStream closed', arguments);
       bufferStream = undefined;
     });
-    
-    bufferStream.on('error',console.error)
     bufferStream.pipe(sox.stdio[0]);
     sox.stdio[1].pipe(speech.stdio[0]);
-    
-    
-    sox.stdio[1].on('error',console.error);
     sox.stdio[1].on('close', function () {
       console.log('sox closed', arguments);
       sox = undefined;
     });
-    speech.stdio[1].on('error',console.error)
-    .on('close', function () {
+    speech.stdio[1].on('error', catchWatsonError(socket, speech)).on('close', function () {
       console.log('watson closed', arguments);
       speech = undefined;
     }).on('data', function (b) {
-      console.log(b);
-      //socket.emit('transcript', b.toString());
+      socket.emit('transcript', b.toString());
       if (!defined(sox) || sox.killed) {
         if (defined(speech) && !speech.killed) {
-          //speech.kill();
+          speech.kill();
         }
       }
     });

@@ -4,3 +4,23 @@ margin: 0;
 font-family: 'Open Sans', sans-serif;
 box-sizing:border-box;
 }
+
+p {
+  padding-bottom: 0.5em;
+  max-height: 100px;
+  transition: all .2s linear;
+  overflow:hidden;
+  display:block;
+}
+
+body {
+  padding: 10vmin;
+}
+
+.close {
+  padding: 0em;
+  max-height: 0px;
+  padding-top: 0em;
+  padding-bottom: 0em;
+
+}

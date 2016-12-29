@@ -1,6 +1,6 @@
 console.log('main.js');
 var app = angular.module('app', []);
-app.controller('navctrl', function ($scope, $timeout) {
+app.controller('navctrl', function ($scope) {
 });
 var socket = io.connect('http://localhost');
 socket.on('data', function (data) {
@@ -42,8 +42,15 @@ function initializeEmitter(stream) {
   audioInput.connect(emitter);
   emitter.connect(context.destination);
 }
+
+var $results = document.querySelector('.results');
+
 socket.on('transcript', function (e) {
+  var p = document.createElement('p');
+  p.innerHTML = e;
+  $results.appendChild(p);
   console.log(e);
+  setTimeout(function(){p.classList.add('close')},5000)
 });
 socket.on('err', function (e) {
   console.error(e);
